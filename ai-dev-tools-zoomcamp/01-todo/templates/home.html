@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <a class="button is-primary" href="{% url 'todo_create' %}">New TODO</a>
+</div>
+
+<table class="table is-fullwidth">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Due date</th>
+            <th>Completed</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for todo in todos %}
+        <tr>
+            <td>{{ todo.title }}</td>
+            <td>{{ todo.due_date|default:"-" }}</td>
+            <td>{{ todo.is_completed }}</td>
+            <td>
+                <a href="{% url 'todo_update' todo.pk %}">Edit</a> |
+                <a href="{% url 'todo_complete' todo.pk %}">Mark done</a> |
+                <a href="{% url 'todo_delete' todo.pk %}">Delete</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="4">No TODOs yet.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
