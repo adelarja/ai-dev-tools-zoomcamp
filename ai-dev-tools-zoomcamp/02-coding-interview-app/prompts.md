@@ -59,5 +59,21 @@ how about integration tests?
 
 don't forget to follow AGENT.md directives
 
+# Question 4
+
+I have verified the syntax highlighting implementation.
+
+The application is using @monaco-editor/react, which provides built-in syntax highlighting.
+
+I confirmed that frontend/src/pages/Interview.jsx correctly maps the language IDs:
+
+Python: python
+JavaScript: javascript
+C++: cpp (This is the correct ID for Monaco Editor)
+No code changes were needed as the implementation was already correct. You should see proper syntax highlighting for all supported languages when running the app.
+
+# Question 5
+
+
 
 

@@ -98,16 +98,105 @@ function Interview() {
         }
     };
 
+    const pyodideRef = useRef(null);
+
+    useEffect(() => {
+        // Initialize Pyodide
+        const loadPyodide = async () => {
+            if (window.loadPyodide && !pyodideRef.current) {
+                try {
+                    pyodideRef.current = await window.loadPyodide();
+                    console.log("Pyodide loaded");
+                } catch (err) {
+                    console.error("Failed to load Pyodide:", err);
+                }
+            }
+        };
+        loadPyodide();
+    }, []);
+
     const runCode = async () => {
-        try {
-            const response = await axios.post(`${API_URL}/execute`, {
-                code: code,
-                language: language,
-            });
-            setOutput(response.data.output);
-        } catch (error) {
-            console.error('Error executing code:', error);
-            setOutput('Error executing code');
+        setOutput('Running...');
+
+        if (language === 'python') {
+            if (!pyodideRef.current) {
+                setOutput('Python environment is loading... please wait.');
+                return;
+            }
+            try {
+                // Redirect stdout
+                pyodideRef.current.runPython(`
+import sys
+import io
+sys.stdout = io.StringIO()
+`);
+                await pyodideRef.current.runPythonAsync(code);
+                const stdout = pyodideRef.current.runPython("sys.stdout.getvalue()");
+                setOutput(stdout);
+            } catch (err) {
+                setOutput(String(err));
+            }
+        } else if (language === 'javascript') {
+            try {
+                const logs = [];
+                const originalLog = console.log;
+                console.log = (...args) => {
+                    logs.push(args.map(arg => String(arg)).join(' '));
+                    originalLog(...args);
+                };
+
+                // Execute JS safely-ish
+                // Note: new Function is still eval, but runs in global scope usually.
+                // We wrap it to capture console.log
+                new Function(code)();
+
+                console.log = originalLog;
+                setOutput(logs.join('\n'));
+            } catch (err) {
+                setOutput(String(err));
+            }
+        } else if (language === 'cpp') {
+            try {
+                if (!window.JSCPP) {
+                    setOutput('JSCPP library not loaded.');
+                    return;
+                }
+                const config = {
+                    stdio: {
+                        write: (s) => {
+                            setOutput(prev => prev + s);
+                        }
+                    }
+                };
+                setOutput(''); // Clear output
+                const engine = new window.JSCPP(code, config);
+                engine.run();
+            } catch (err) {
+                setOutput(String(err));
+            }
+        } else if (language === 'java') {
+            // CheerpJ 3.0 requires initialization
+            if (!window.cheerpjInit) {
+                setOutput('CheerpJ not loaded.');
+                return;
+            }
+
+            // Note: CheerpJ runs compiled .class or .jar files. 
+            // Running raw source code (.java) requires a compiler (javac) running in the browser.
+            // This is complex to set up in a simple demo.
+            // For now, we will display a message explaining this limitation.
+
+            setOutput('Java execution requires compiling source code to bytecode first.\n' +
+                'Client-side compilation (javac in browser) is heavy and not fully implemented in this demo.\n' +
+                'Please use Python, JavaScript, or C++ (interpreted) for client-side execution.');
+
+            /* 
+            // Experimental: If we had a way to compile, we would do:
+            await cheerpjInit();
+            const cj = await cheerpjRunMain("Main", "/app/classpath", ...);
+            */
+        } else {
+            setOutput(`Client-side execution for ${language} is not supported yet.`);
         }
     };
 
