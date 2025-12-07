@@ -11,9 +11,25 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: interview_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/interview_db
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,6 +42,9 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --all-extras --dev
+
+      - name: Run Migrations
+        run: uv run alembic upgrade head
 
       - name: Run Backend Tests
         run: uv run pytest
@@ -53,6 +72,20 @@ jobs:
   integration-tests:
     needs: [backend-tests, frontend-tests]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: interview_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,8 +101,16 @@ jobs:
         working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
         run: uv sync --all-extras --dev
 
+      - name: Run Migrations
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/interview_db
+        run: uv run alembic upgrade head
+
       - name: Start Backend
         working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://postgres:password@localhost:5432/interview_db
         run: uv run uvicorn app.main:app --port 8000 &
         # Wait for backend to start
       
