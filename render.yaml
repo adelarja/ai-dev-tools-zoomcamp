@@ -5,7 +5,7 @@ services:
     plan: free
     branch: main
     repo: https://github.com/adelarja/ai-dev-tools-zoomcamp # User will need to update this or connect via UI
-    rootDir: 02-coding-interview-app
+    rootDir: ai-dev-tools-zoomcamp/02-coding-interview-app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
