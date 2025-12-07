@@ -3,10 +3,14 @@
 A real-time collaborative coding interview application.
 
 ## Features
-- **Real-time Collaboration**: Code updates are synced instantly between users.
-- **Multi-language Support**: Python, JavaScript, Java, C++.
-- **Code Execution**: Execute Python and JavaScript code securely (local runner).
-- **Dark Mode**: Modern, developer-friendly UI.
+- **Real-time Collaboration**: Code changes are synced instantly across all connected clients.
+- **Multi-language Support**: Python, JavaScript, Java, and C++.
+- **Client-side Execution**:
+    - **Python**: Executed via **Pyodide** (WASM).
+    - **JavaScript**: Executed via native browser engine.
+    - **C++**: Executed via **JSCPP** (Interpreter).
+    - **Java**: Setup for **CheerpJ** (WASM), currently limited to bytecode execution (source compilation requires backend or heavier setup).
+- **Syntax Highlighting**: Powered by Monaco Editor.eveloper-friendly UI.
 
 ## Tech Stack
 - **Backend**: FastAPI, SQLAlchemy (Async), PostgreSQL, WebSockets.
@@ -68,9 +72,21 @@ cd frontend
 npm run dev
 ```
 
-## Testing
+## Docker Deployment
 
-### Backend Tests
+You can run the entire application (Backend + Frontend + Database) using Docker Compose:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at `http://localhost:8000`.
+
+### Single Container Build
+To build the single container image (useful for deployment to Render):
+```bash
+docker build -t coding-interview-app .
+```
 ```bash
 cd backend
 uv run pytest

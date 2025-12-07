@@ -74,6 +74,33 @@ No code changes were needed as the implementation was already correct. You shoul
 
 # Question 5
 
+I used the following approaches:
+
+Python: I used Pyodide.
+How it works: Pyodide is a port of CPython to WebAssembly (WASM). It downloads a compiled WASM binary of the Python interpreter to your browser, allowing it to execute Python code locally.
+Why: It is the industry standard for running Python in the browser, supporting many scientific packages (NumPy, Pandas) out of the box.
+JavaScript: I did not compile JavaScript to WASM.
+How it works: I executed it natively using the browser's built-in JavaScript engine (like V8 in Chrome).
+Why: Browsers already run JavaScript natively and highly optimized. Compiling JS to WASM to run in the browser (which then runs WASM) would be redundant and slower. I simply used new Function(code)() to execute the user's code string safely within the existing environment.
+C++: I used JSCPP.
+How it works: It is a C++ interpreter written in JavaScript.
+Why: A full C++ WASM compiler (like Clang) is very heavy (~100MB+). JSCPP is lightweight and sufficient for basic algorithmic interview problems.
+Java: I included CheerpJ.
+How it works: It is a full JVM replacement in WebAssembly.
+Limitation: It runs bytecode (.class files). Running raw source code (.java) requires a compiler (javac) in the browser, which is a more complex setup not fully implemented in this demo.
+
+# Question 6
+
+I used a multi-stage build with two base images:
+
+Stage 1 (Frontend Build): node:20-slim
+Used to install dependencies and build the React application.
+slim variant keeps the build environment lightweight.
+Stage 2 (Final Runtime): python:3.11-slim
+This is the final image that runs the application.
+It contains the Python runtime for FastAPI and the built static files from Stage 1.
+It also copies the uv binary from ghcr.io/astral-sh/uv:latest for fast package management.
+
 
 
 
