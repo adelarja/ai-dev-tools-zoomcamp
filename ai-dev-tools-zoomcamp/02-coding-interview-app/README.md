@@ -44,18 +44,29 @@ npm install
 
 ## Running the App
 
-### Start Backend
+You can run both the backend and frontend concurrently with a single command from the root directory:
+
 ```bash
-cd backend
-uv run uvicorn app.main:app --reload
+npm start
 ```
 
-### Start Frontend
+This will start:
+- Backend at `http://localhost:8000`
+- Frontend at `http://localhost:5173`
+
+### Running Individually
+
+#### Backend
+```bash
+cd backend
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+#### Frontend
 ```bash
 cd frontend
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173).
 
 ## Testing
 
