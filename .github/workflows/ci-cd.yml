@@ -1,0 +1,102 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run Backend Tests
+        run: uv run pytest
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Frontend Tests
+        run: npm run test -- --run
+
+  integration-tests:
+    needs: [backend-tests, frontend-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+        run: uv python install
+
+      - name: Install Backend Dependencies
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+        run: uv sync --all-extras --dev
+
+      - name: Start Backend
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app/backend
+        run: uv run uvicorn app.main:app --port 8000 &
+        # Wait for backend to start
+      
+      - name: Wait for Backend
+        run: sleep 10
+
+      - name: Run Integration Tests
+        working-directory: ai-dev-tools-zoomcamp/02-coding-interview-app
+        # We need to install pytest/httpx in the root or reuse the backend env.
+        # Reusing backend env is easier if we run from backend dir or point to it.
+        # But the test file is in tests/integration/test_integration.py (relative to app root)
+        # Let's run it using the backend's environment but pointing to the test file.
+        run: |
+          cd backend
+          uv run pytest ../tests/integration/test_integration.py
+
+  deploy:
+    needs: integration-tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to Render
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$deploy_url" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL is not set. Skipping deployment."
+            exit 1
+          fi
+          curl "$deploy_url"
