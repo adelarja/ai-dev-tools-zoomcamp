@@ -1,4 +1,8 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from app.database import get_db
+from app.models import InterviewSession
 from typing import List, Dict
 
 router = APIRouter(tags=["websocket"])
@@ -26,15 +30,34 @@ class ConnectionManager:
                 if connection != sender:
                     await connection.send_text(message)
 
+    async def broadcast_json(self, message: dict, session_id: str, sender: WebSocket):
+        if session_id in self.active_connections:
+            for connection in self.active_connections[session_id]:
+                if connection != sender:
+                    await connection.send_json(message)
+
 manager = ConnectionManager()
 
 @router.websocket("/ws/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: str):
+async def websocket_endpoint(websocket: WebSocket, session_id: str, db: AsyncSession = Depends(get_db)):
     await manager.connect(websocket, session_id)
     try:
         while True:
-            data = await websocket.receive_text()
-            # Here we would also update the DB state ideally, or just broadcast
-            await manager.broadcast(data, session_id, websocket)
+            data = await websocket.receive_json()
+            
+            # Update code/language in DB
+            stmt = select(InterviewSession).where(InterviewSession.id == session_id)
+            result = await db.execute(stmt)
+            session = result.scalars().first()
+            
+            if session:
+                if data.get("type") == "code":
+                    session.code_content = data.get("payload")
+                elif data.get("type") == "language":
+                    session.language = data.get("payload")
+                await db.commit()
+            
+            # Broadcast the JSON message as is
+            await manager.broadcast_json(data, session_id, websocket)
     except WebSocketDisconnect:
         manager.disconnect(websocket, session_id)
