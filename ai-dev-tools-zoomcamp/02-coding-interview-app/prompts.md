@@ -53,5 +53,11 @@ FAILED tests/test_api.py::test_get_session - RuntimeError: Task <Task pending na
 
 how about the integration tests?
 
+## Fourth iteration
+
+how about integration tests?
+
+don't forget to follow AGENT.md directives
+
 
 
