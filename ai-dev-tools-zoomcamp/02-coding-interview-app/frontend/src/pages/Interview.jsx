@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000';
-const WS_URL = 'ws://localhost:8000';
+const API_URL = import.meta.env.DEV ? 'http://localhost:8000' : '';
+const WS_URL = import.meta.env.DEV
+    ? 'ws://localhost:8000'
+    : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`;
 
 const LANGUAGES = [
     { id: 'python', name: 'Python' },
