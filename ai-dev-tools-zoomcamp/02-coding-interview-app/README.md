@@ -70,3 +70,32 @@ uv run pytest
 cd frontend
 npm test
 ```
+
+### Integration Tests
+Integration tests for WebSockets and Database are located in `backend/tests/`.
+
+**WebSocket Tests** (Note: May require specific environment setup):
+```bash
+cd backend
+uv run pytest tests/test_websocket.py
+```
+
+**Database Tests**:
+```bash
+cd backend
+uv run pytest tests/test_database.py
+```
+
+## Seeding Data
+To populate the database with dummy interview sessions:
+```bash
+cd backend
+uv run python seed_db.py
+```
+
+### Integration Tests
+Integration tests for WebSockets are located in `backend/tests/test_websocket.py`.
+```bash
+cd backend
+uv run pytest tests/test_websocket.py
+```
