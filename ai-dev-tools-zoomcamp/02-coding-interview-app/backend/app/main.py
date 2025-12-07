@@ -35,26 +35,31 @@ app.include_router(execution.router)
 # So this static serving is primarily for the Docker production build.
 # We can check if the directory exists.
 
+# Serve Frontend Static Files
 frontend_dist = os.path.join(os.path.dirname(__file__), "../../frontend/dist")
+print(f"Frontend dist path: {frontend_dist}")
+print(f"Frontend dist exists: {os.path.exists(frontend_dist)}")
+
 if os.path.exists(frontend_dist):
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
     
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        # If API route, it would have been caught above (FastAPI matches in order? No, specific routes first usually)
-        # But we mounted routers first.
-        # However, catch-all might shadow if not careful.
-        # Actually, `mount` matches path prefixes.
-        # We want to serve index.html for any non-API route.
-        
-        # Check if file exists in dist (e.g. favicon.ico)
+        print(f"Serving path: {full_path}")
         file_path = os.path.join(frontend_dist, full_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)
             
         # Otherwise return index.html
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        index_path = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        return {"error": "index.html not found in dist"}
 else:
     @app.get("/")
     async def root():
-        return {"message": "Coding Interview App Backend (Frontend not built)"}
+        return {
+            "message": "Coding Interview App Backend (Frontend not built)",
+            "cwd": os.getcwd(),
+            "files": os.listdir(".") if os.path.exists(".") else "N/A"
+        }
