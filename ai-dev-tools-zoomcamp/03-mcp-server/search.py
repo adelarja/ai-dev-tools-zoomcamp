@@ -65,12 +65,16 @@ def search(index, query):
     results = index.search(query, num_results=5)
     return results
 
-def main():
+def initialize_index():
     download_data()
     documents = load_documents()
     index = index_documents(documents)
+    return index
+
+def main():
+    index = initialize_index()
     
-    query = "how to start"
+    query = "demo"
     results = search(index, query)
     
     print("\nSearch Results:")

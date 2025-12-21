@@ -20,7 +20,7 @@ To use this server with an MCP client (like Claude Desktop or an IDE extension),
         "run",
         "main.py"
       ],
-      "cwd": "/home/adelarja/Documents/Cursos/ai-dev-tools-zoomcamp/ai-dev-tools-zoomcamp/03-mcp-server"
+      "cwd": "<PATH>/03-mcp-server"
     }
   }
 }
