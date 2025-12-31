@@ -60,3 +60,8 @@ You can run the entire application using Docker Compose.
    ```bash
    docker compose down
    ```
+
+4. **Run Tests:**
+   ```bash
+   docker compose run --rm backend uv run python manage.py test
+   ```
