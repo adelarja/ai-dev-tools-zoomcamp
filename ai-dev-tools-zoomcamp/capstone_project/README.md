@@ -43,3 +43,20 @@ uv run python manage.py test
 ## API Documentation
 Once the server is running, you can access the OpenAPI schema at:
 `http://localhost:8000/api/schema/`
+
+## Docker Support
+
+You can run the entire application using Docker Compose.
+
+1. **Build and Run:**
+   ```bash
+   docker compose up --build
+   ```
+
+2. **Access the App:**
+   The API will be available at `http://localhost:8000/api/`.
+
+3. **Stop the App:**
+   ```bash
+   docker compose down
+   ```

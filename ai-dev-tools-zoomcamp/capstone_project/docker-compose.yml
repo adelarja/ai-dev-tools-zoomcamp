@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=production_tracking
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=production_tracking
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - SECRET_KEY=django-insecure-docker-dev-key
+      - DEBUG=True
+
+volumes:
+  postgres_data:
