@@ -11,9 +11,9 @@ services:
       - "5432:5432"
 
   backend:
-    build: .
+    build: ./backend
     volumes:
-      - .:/app
+      - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -25,6 +25,16 @@ services:
       - DB_PASSWORD=postgres
       - SECRET_KEY=django-insecure-docker-dev-key
       - DEBUG=True
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
